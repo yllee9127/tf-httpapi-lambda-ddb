@@ -1,7 +1,8 @@
 # Commands to invoke api
+
 ```bash
 # Add movie
-INVOKE_URL=https://xxxxxxx.amazonaws.com
+INVOKE_URL=https://xria2h5hr4.execute-api.ap-southeast-1.amazonaws.com
 curl \
   -X PUT \
   -H "Content-Type: application/json" \

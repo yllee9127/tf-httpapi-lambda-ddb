@@ -1,3 +1,4 @@
+
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/package"
@@ -14,7 +15,19 @@ resource "aws_lambda_function" "http_api_lambda" {
   role             = aws_iam_role.lambda_exec.arn
 
   environment {
-    variables = {} # todo: fill with apporpriate value
+    variables = {
+      DDB_TABLE = "${local.name_prefix}-topmovies"} # todo: fill with apporpriate value
+  }
+}
+
+# Challenge - keep 7 days log retention for Lambda, 
+# Need to run "terraform import aws_cloudwatch_log_group.function_log_group /aws/lambda/yllee9127-topmovies-api" in command line
+resource "aws_cloudwatch_log_group" "function_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.http_api_lambda.function_name}"
+  retention_in_days = 7
+  lifecycle {
+    create_before_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -45,7 +58,10 @@ resource "aws_iam_policy" "lambda_exec_role" {
         {
             "Effect": "Allow",
             "Action": [
-                "dynamodb:GetItem"
+                "dynamodb:PutItem",
+                "dynamodb:GetItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:Scan"
             ],
             "Resource": "${aws_dynamodb_table.table.arn}"
         },
